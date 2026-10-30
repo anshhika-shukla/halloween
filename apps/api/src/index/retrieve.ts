@@ -65,8 +65,10 @@ function computeKeywordScore(query: string, chunk: Chunk, queryTokens: string[])
       if (token.length >= 3 && /^[a-z0-9_$]+$/.test(token)) {
         const defRegex = new RegExp(`(function|class|const|let|var|def|func)\\s+${token}\\b`, 'i');
         if (defRegex.test(chunk.text)) {
-          score += 0.3;
+          score += chunk.kind === 'file' ? 0.45 : 0.2;
           break;
+        } else if (chunk.kind === 'file' && new RegExp(`\\b${token}\\b`, 'i').test(chunk.text)) {
+          score += 0.15;
         }
       }
     }
@@ -113,7 +115,9 @@ export async function retrieve(
     const kwScore = computeKeywordScore(query, chunk, queryTokens);
 
     // 3. Hybrid score: 0.7 * cosine + 0.3 * keyword score
-    const finalScore = 0.7 * cosine + 0.3 * kwScore;
+    // If completely unrelated with zero keyword overlap, suppress hash-bucket collision artifacts
+    const cosineWeight = kwScore === 0 ? 0.35 : 0.7;
+    const finalScore = cosineWeight * cosine + 0.3 * kwScore;
 
     scoredChunks.push({ chunk, score: finalScore });
   }

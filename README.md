@@ -25,3 +25,8 @@ Run all tests, typecheck, and linting across the monorepo:
 npm run verify
 ```
 
+To run end-to-end index and hybrid retrieval verification on an actual repository fixture:
+```bash
+npx tsx scripts/verify-retrieval.ts
+```
+
