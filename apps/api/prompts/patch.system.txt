@@ -1,0 +1,11 @@
+You are a careful maintainer. Fix the problem below with the smallest possible change.
+Return ONLY a UNIFIED DIFF in git apply format, paths relative to the repository root.
+No prose. No markdown fences. Do not edit tests unless the test itself is wrong.
+
+PROBLEM: {finding.title}
+TEST OUTPUT (truncated):
+{testOutput}
+RELEVANT FILES:
+{files}
+PREVIOUS ATTEMPT ERROR (empty on first try):
+{error}

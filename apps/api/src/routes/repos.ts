@@ -21,3 +21,23 @@ reposRouter.get('/repos/:id', (req, res, next) => {
     next(err);
   }
 });
+
+reposRouter.get('/repos/:id/chunks/:chunkId', (req, res, next) => {
+  try {
+    const repo = jobManager.getRepo(req.params.id);
+    if (!repo) {
+      throw new AppError('repo_not_found', `Repository ${req.params.id} was not found`, 404);
+    }
+
+    const { id: repoId, chunkId } = req.params;
+    const chunk = jobManager.getChunk(repoId, chunkId);
+    if (!chunk) {
+      throw new AppError('chunk_not_found', `Chunk ${chunkId} not found`, 404);
+    }
+
+    res.json(chunk);
+  } catch (err) {
+    next(err);
+  }
+});
+

@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import { EventEmitter } from 'node:events';
 import crypto from 'node:crypto';
 import { config } from '../config.js';
-import type { Repo } from '../types.js';
+import type { Repo, Chunk } from '../types.js';
 import type { JobState, JobProgressEvent, JobStage } from './types.js';
 import { validateSource, getWorkspaceRoot, type ValidatedSource } from './sourceValidator.js';
 import { cloneRepository } from './clone.js';
@@ -211,6 +211,17 @@ export class JobManager extends EventEmitter {
       }
     }
     return repos;
+  }
+
+  getChunk(repoId: string, chunkId: string, workspaceRoot = getWorkspaceRoot()): Chunk | null {
+    const chunksPath = path.resolve(workspaceRoot, config.DATA_DIR, 'repos', repoId, 'chunks.json');
+    if (!fs.existsSync(chunksPath)) return null;
+    try {
+      const chunks = JSON.parse(fs.readFileSync(chunksPath, 'utf8')) as Chunk[];
+      return chunks.find((c) => c.id === chunkId) || null;
+    } catch {
+      return null;
+    }
   }
 }
 
