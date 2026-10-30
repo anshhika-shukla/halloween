@@ -19,6 +19,21 @@ REPOREVENANT takes a GitHub repository (or a local clone), studies its code, com
 - **Phase 1 (Ingestion):** Source safety validation, repository cloning, tree walking, git log parsing, GitHub issues extraction, and SSE progress tracking.
 - **Phase 2 (Index & Retrieval):** 60-line code window chunking with 10-line overlap, markdown heading splitting, commit/issue chunking, Float32Array vector embedding store (`chunks.json`, `vectors.f32`), HEAD sha cache validation, and hybrid retrieval (`0.7 * cosine + 0.3 * keywordScore`) with identifier boosting and sequential evidence ranking (`E1..Ek`).
 - **Phase 3 (Ghost Chat with Citations):** Grounded chat interface (`POST /api/repos/:id/chat`), live citation parsing (`[E#]`), server-side evidence verification, clean refusal path on insufficient context (`MIN_EVIDENCE_SCORE`), editable system prompts in `prompts/`, optional seance persona mode, evidence drawer lookup (`GET /api/repos/:id/chunks/:chunkId`), and automated evaluation scripts (`scripts/chat-eval.ts`, `scripts/calibrate-threshold.ts`).
+- **Phase 4 (UI: Summon, Scan, Haunt):** Cinematic haunted developer interface with near-black background (`#0b0d10`), phosphor teal (`#5eead4`) and spectral violet (`#a78bfa`) accents. Features:
+  - **Summon:** Landing page, animated floating SVG ghost, HTTPS URL validation with quick sample repo action, and top-bar status indicators for provider/offline/sandbox modes.
+  - **Scan:** Real-time SSE stage progression (`clone`, `walk`, `history`, `issues`, `embed`, `ready`), spooky status narratives, and streaming telemetry terminal.
+  - **Haunt:** 3-column dashboard with repository overview card ("dead for N years" badge, languages, commits, files), interactive ghost chat with markdown formatting, clickable citation chips, ungrounded sentence muting with warning tooltips, seance tone toggle, starter prompts, and slide-out evidence inspection drawer.
+
+## Running the UI & API
+Start development servers:
+```bash
+# Terminal 1: Backend API
+npm run dev --workspace=apps/api
+
+# Terminal 2: Next.js Frontend
+npm run dev --workspace=apps/web
+```
+Navigate to `http://localhost:3000` to access the REPOREVENANT UI.
 
 ## Verification
 Run all tests, typecheck, and linting across the monorepo:

@@ -8,6 +8,7 @@ dist
 build
 .next
 out
+*.tsbuildinfo
 
 # runtime data and secrets
 data/
