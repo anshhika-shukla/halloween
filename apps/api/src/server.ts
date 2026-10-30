@@ -3,6 +3,9 @@ import express from 'express';
 import cors from 'cors';
 import { config } from './config.js';
 import { healthRouter } from './routes/health.js';
+import { summonRouter } from './routes/summon.js';
+import { jobsRouter } from './routes/jobs.js';
+import { reposRouter } from './routes/repos.js';
 import { errorMiddleware } from './errors.js';
 
 export function createApp() {
@@ -13,6 +16,9 @@ export function createApp() {
 
   // API Routes
   app.use('/api', healthRouter);
+  app.use('/api', summonRouter);
+  app.use('/api', jobsRouter);
+  app.use('/api', reposRouter);
 
   // Error handling middleware
   app.use(errorMiddleware);
