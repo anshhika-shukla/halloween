@@ -54,7 +54,11 @@ export const configSchema = z.object({
 export type Config = z.infer<typeof configSchema>;
 
 export function loadConfig(rawEnv: Record<string, string | undefined> = process.env): Config {
-  const result = configSchema.safeParse(rawEnv);
+  const envToParse = { ...rawEnv };
+  if (process.env.NODE_ENV === 'test' && rawEnv === process.env && !envToParse.LLM_PROVIDER) {
+    envToParse.LLM_PROVIDER = 'mock';
+  }
+  const result = configSchema.safeParse(envToParse);
   if (!result.success) {
     const errorDetails = result.error.errors.map((e) => `${e.path.join('.')}: ${e.message}`).join(', ');
     throw new Error(`Configuration validation failed: ${errorDetails}`);

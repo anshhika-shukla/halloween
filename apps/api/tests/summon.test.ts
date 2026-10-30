@@ -109,8 +109,8 @@ describe('Summon API Tests (T1.3, T1.4, T1.6)', () => {
       }
     }
 
-    // Assert stages in order
-    expect(stagesReceived).toEqual(['clone', 'walk', 'history', 'issues', 'ready']);
+    // Assert stages in order (Phase 2 includes embed stage)
+    expect(stagesReceived).toEqual(['clone', 'walk', 'history', 'issues', 'embed', 'ready']);
 
     // Job state check
     const jobRes = await request(app).get(`/api/jobs/${jobId}`);
@@ -126,6 +126,7 @@ describe('Summon API Tests (T1.3, T1.4, T1.6)', () => {
     expect(repoRes.body.commitCount).toBe(8);
     expect(repoRes.body.readmeExcerpt).toContain('haunted-todo');
     expect(repoRes.body.fileCount).toBeGreaterThanOrEqual(5);
+    expect(repoRes.body.chunksIndexed).toBeGreaterThan(0);
   });
 
   it('T1.6: Summoning the same source twice reuses the same repoId and does not duplicate data', async () => {

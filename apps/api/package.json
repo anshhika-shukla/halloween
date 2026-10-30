@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "build": "tsc",
-    "test": "vitest run",
+    "test": "vitest run --fileParallelism=false",
     "lint": "echo Api lint ok",
     "typecheck": "tsc --noEmit"
   },

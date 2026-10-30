@@ -12,6 +12,9 @@ import { walkRepository } from './walk.js';
 import { parseGitHistory } from './gitlog.js';
 import { gitHubClient, type IGitHubClient } from './github.js';
 import { extractReadmeExcerpt, extractDependencies, buildRepoOverview } from './metadata.js';
+import { chunkFiles, chunkCommits, chunkIssues, capChunks } from './chunk.js';
+import { embedChunks } from '../index/embed.js';
+import { saveIndex, loadIndex, isIndexUpToDate } from '../index/store.js';
 import { AppError } from '../errors.js';
 
 export class JobManager extends EventEmitter {
@@ -106,7 +109,7 @@ export class JobManager extends EventEmitter {
       const gitSummary = await parseGitHistory(repoCloneDir, 500);
 
       // 4. STAGE: issues
-      this.emitProgress(jobId, 'issues', 'running', 'Listening to the issues...', 80);
+      this.emitProgress(jobId, 'issues', 'running', 'Listening to the issues...', 75);
       let issues: any[] = [];
       let pullRequests: any[] = [];
       const warnings: string[] = [];
@@ -116,6 +119,33 @@ export class JobManager extends EventEmitter {
         issues = ghResult.issues;
         pullRequests = ghResult.pullRequests;
         warnings.push(...ghResult.warnings);
+      }
+
+      // 5. STAGE: embed (inserted in Phase 2)
+      this.emitProgress(jobId, 'embed', 'running', 'Communing with the vectors...', 85);
+      const headSha = gitSummary.commits[0]?.sha;
+      let chunksCount = 0;
+      let indexDims = 256;
+
+      if (isIndexUpToDate(repoManagedDir, headSha)) {
+        const loaded = loadIndex(repoManagedDir);
+        chunksCount = loaded?.chunks.length || 0;
+        indexDims = loaded?.dims || 256;
+      } else {
+        const fileChunks = chunkFiles(walkResult.files, repoCloneDir);
+        const commitChunks = chunkCommits(gitSummary.commits);
+        const issueChunks = chunkIssues(issues);
+        const allChunks = [...fileChunks, ...commitChunks, ...issueChunks];
+        const capped = capChunks(allChunks, config.MAX_CHUNKS);
+
+        const { vectors, dims } = await embedChunks(capped, (proc, tot) => {
+          const pct = 85 + Math.floor((proc / tot) * 10);
+          this.emitProgress(jobId, 'embed', 'running', `Embedding chunks (${proc}/${tot})...`, pct);
+        });
+
+        indexDims = dims;
+        saveIndex(repoManagedDir, capped, vectors, dims, headSha);
+        chunksCount = capped.length;
       }
 
       // Metadata & Overview
@@ -129,13 +159,20 @@ export class JobManager extends EventEmitter {
         dependencies,
         warnings
       );
+      repoOverview.chunksIndexed = chunksCount;
+
+      const metaWithIndexInfo = {
+        ...repoOverview,
+        headSha,
+        dims: indexDims,
+      };
 
       // Persist meta.json, history.json, issues.json
-      fs.writeFileSync(path.join(repoManagedDir, 'meta.json'), JSON.stringify(repoOverview, null, 2), 'utf8');
+      fs.writeFileSync(path.join(repoManagedDir, 'meta.json'), JSON.stringify(metaWithIndexInfo, null, 2), 'utf8');
       fs.writeFileSync(path.join(repoManagedDir, 'history.json'), JSON.stringify(gitSummary.commits, null, 2), 'utf8');
       fs.writeFileSync(path.join(repoManagedDir, 'issues.json'), JSON.stringify(issues, null, 2), 'utf8');
 
-      // 5. STAGE: ready (Phase 1 finishes with ready; Phase 2 will insert embed before ready)
+      // 6. STAGE: ready
       this.emitProgress(jobId, 'ready', 'completed', 'Haunting complete.', 100);
       this.activeRepoJobs.delete(validated.repoId);
     } catch (err: any) {
