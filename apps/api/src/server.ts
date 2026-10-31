@@ -7,6 +7,7 @@ import { summonRouter } from './routes/summon.js';
 import { jobsRouter } from './routes/jobs.js';
 import { reposRouter } from './routes/repos.js';
 import { chatRouter } from './routes/chat.js';
+import { resurrectionRouter } from './routes/resurrection.js';
 import { errorMiddleware } from './errors.js';
 
 export function createApp() {
@@ -21,6 +22,7 @@ export function createApp() {
   app.use('/api', jobsRouter);
   app.use('/api', reposRouter);
   app.use('/api', chatRouter);
+  app.use('/api', resurrectionRouter);
 
   // Error handling middleware
   app.use(errorMiddleware);

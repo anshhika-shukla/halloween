@@ -100,3 +100,36 @@ export type HealthResponse = {
     available: boolean;
   };
 };
+
+export type Finding = {
+  id: string;
+  kind: 'failing-test' | 'todo' | 'outdated-dep' | 'issue';
+  title: string;
+  evidence: string[];
+  difficulty: 'easy' | 'medium' | 'hard';
+};
+
+export type TestRun = {
+  exitCode: number;
+  passed: number;
+  failed: number;
+  output: string;
+};
+
+export type Patch = {
+  id: string;
+  findingId: string;
+  diff: string;
+  explanation: string;
+  citations: Citation[];
+  attempts: number;
+  verification: {
+    status: 'verified' | 'unverified' | 'failed';
+    before?: TestRun;
+    after?: TestRun;
+    reason?: string;
+  };
+  state: 'proposed' | 'approved' | 'rejected';
+  branch?: string;
+};
+

@@ -71,8 +71,11 @@ export default function GhostHauntPage() {
               onCitationClick={(citation) => setSelectedCitation(citation)}
             />
 
-            {/* Right Column: Resurrection Preview */}
-            <ResurrectionPanel repoId={repoId} />
+            {/* Right Column: Resurrection Mode */}
+            <ResurrectionPanel
+              repoId={repoId}
+              onCitationClick={(citation) => setSelectedCitation(citation)}
+            />
           </div>
         )}
 

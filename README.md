@@ -23,6 +23,13 @@ REPOREVENANT takes a GitHub repository (or a local clone), studies its code, com
   - **Summon:** Landing page, animated floating SVG ghost, HTTPS URL validation with quick sample repo action, and top-bar status indicators for provider/offline/sandbox modes.
   - **Scan:** Real-time SSE stage progression (`clone`, `walk`, `history`, `issues`, `embed`, `ready`), spooky status narratives, and streaming telemetry terminal.
   - **Haunt:** 3-column dashboard with repository overview card ("dead for N years" badge, languages, commits, files), interactive ghost chat with markdown formatting, clickable citation chips, ungrounded sentence muting with warning tooltips, seance tone toggle, starter prompts, and slide-out evidence inspection drawer.
+- **Phase 5 (Resurrection Mode):** Autonomous problem detection and verified code restoration. Features:
+  - **Finding Detection (`resurrect/detect.ts`):** Automated test suite failure analysis and codebase TODO/FIXME/HACK/XXX extraction with deterministic SHA-1 IDs and repository HEAD SHA caching (`findings.json`).
+  - **Multi-Environment Sandbox (`resurrect/sandbox.ts`):** Isolated test runners including strict zero-egress Docker sandboxing (`--network none`, 512MB RAM, 1 CPU, 256 PIDs, 120s timeout, 8KB output cap), Safety Rule 5 fixture execution (`UnsafeLocalRunner`), and graceful disable fallbacks.
+  - **Patch Guard (`resurrect/diffGuard.ts`):** Strict unified diff enforcement rejecting markdown fences, `.git`, `.github`, directory traversal, binary files, lockfiles, modifications exceeding 5 files or 200 lines, or unindexed files.
+  - **Autonomous Proposal Loop (`resurrect/propose.ts`):** Context assembly with retrieval evidence, 3-attempt self-correcting retry loop testing patch application and test verification in ephemeral clones, repository concurrency guards (HTTP 409), and cited ghost explanations.
+  - **Human-in-the-Loop Application (`resurrect/apply.ts`):** Explicit user approval creating and checking out `reporevenant/fix-{findingId}` branches, applying validated diffs, and committing with finding citations, alongside discard and raw `.patch` downloads.
+  - **Resurrection Chamber UI (`ResurrectionPanel.tsx`):** Real-time findings gallery, before/after test result comparison strips, syntax-highlighted diff viewer, cited explanation chips, and one-click branch creation or rejection.
 
 ## Running the UI & API
 Start development servers:

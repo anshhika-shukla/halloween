@@ -1,4 +1,3 @@
-// apps/web/src/lib/api.ts - API client for REPOREVENANT backend
 import type {
   HealthResponse,
   JobState,
@@ -6,6 +5,8 @@ import type {
   Repo,
   Chunk,
   ChatResponse,
+  Finding,
+  Patch,
 } from '../types';
 
 export const API_BASE =
@@ -110,3 +111,47 @@ export function subscribeJobEvents(
     es.close();
   };
 }
+
+export async function getResurrection(repoId: string): Promise<{
+  findings: Finding[];
+  sandbox: { mode: string; available: boolean };
+}> {
+  const res = await fetch(`${API_BASE}/api/repos/${encodeURIComponent(repoId)}/resurrection`);
+  return handleResponse<{
+    findings: Finding[];
+    sandbox: { mode: string; available: boolean };
+  }>(res);
+}
+
+export async function proposePatch(repoId: string, findingId: string): Promise<Patch> {
+  const res = await fetch(
+    `${API_BASE}/api/repos/${encodeURIComponent(repoId)}/resurrection/propose`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ findingId }),
+    }
+  );
+  return handleResponse<Patch>(res);
+}
+
+export async function approvePatch(patchId: string): Promise<Patch> {
+  const res = await fetch(`${API_BASE}/api/patches/${encodeURIComponent(patchId)}/approve`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+  });
+  return handleResponse<Patch>(res);
+}
+
+export async function rejectPatch(patchId: string): Promise<Patch> {
+  const res = await fetch(`${API_BASE}/api/patches/${encodeURIComponent(patchId)}/reject`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+  });
+  return handleResponse<Patch>(res);
+}
+
+export function getPatchDownloadUrl(patchId: string): string {
+  return `${API_BASE}/api/patches/${encodeURIComponent(patchId)}/download`;
+}
+
