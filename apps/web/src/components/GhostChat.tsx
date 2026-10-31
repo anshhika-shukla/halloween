@@ -48,8 +48,8 @@ export function GhostChat({ repoId, onCitationClick }: GhostChatProps) {
     setIsLoading(true);
 
     try {
-      // Build conversation history for API
-      const history = newMessages.map((m) => ({
+      // Build prior conversation history for API
+      const history = messages.map((m) => ({
         role: m.role,
         content: m.content,
       }));

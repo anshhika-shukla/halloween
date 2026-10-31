@@ -190,7 +190,12 @@ export class JobManager extends EventEmitter {
 
   // Repository storage readers
   getRepo(repoId: string, workspaceRoot = getWorkspaceRoot()): Repo | null {
-    const metaPath = path.resolve(workspaceRoot, config.DATA_DIR, 'repos', repoId, 'meta.json');
+    if (!repoId || !/^[a-zA-Z0-9_.-]+$/.test(repoId) || repoId.includes('..')) {
+      return null;
+    }
+    const reposDir = path.resolve(workspaceRoot, config.DATA_DIR, 'repos');
+    const metaPath = path.resolve(reposDir, repoId, 'meta.json');
+    if (!metaPath.startsWith(reposDir + path.sep)) return null;
     if (!fs.existsSync(metaPath)) return null;
     try {
       return JSON.parse(fs.readFileSync(metaPath, 'utf8'));
@@ -214,7 +219,12 @@ export class JobManager extends EventEmitter {
   }
 
   getChunk(repoId: string, chunkId: string, workspaceRoot = getWorkspaceRoot()): Chunk | null {
-    const chunksPath = path.resolve(workspaceRoot, config.DATA_DIR, 'repos', repoId, 'chunks.json');
+    if (!repoId || !/^[a-zA-Z0-9_.-]+$/.test(repoId) || repoId.includes('..')) {
+      return null;
+    }
+    const reposDir = path.resolve(workspaceRoot, config.DATA_DIR, 'repos');
+    const chunksPath = path.resolve(reposDir, repoId, 'chunks.json');
+    if (!chunksPath.startsWith(reposDir + path.sep)) return null;
     if (!fs.existsSync(chunksPath)) return null;
     try {
       const chunks = JSON.parse(fs.readFileSync(chunksPath, 'utf8')) as Chunk[];

@@ -3,10 +3,12 @@ import { config } from '../config.js';
 import type { LLMProvider } from './provider.js';
 import { mockProvider } from './mock.js';
 import { ollamaProvider } from './ollama.js';
+import { openAICompatProvider } from './openai.js';
 
 export * from './provider.js';
 export * from './mock.js';
 export * from './ollama.js';
+export * from './openai.js';
 
 export function getProvider(overrideType?: string): LLMProvider {
   const providerType = overrideType || config.LLM_PROVIDER;
@@ -15,6 +17,9 @@ export function getProvider(overrideType?: string): LLMProvider {
   }
   if (providerType === 'ollama') {
     return ollamaProvider;
+  }
+  if (providerType === 'openai-compat') {
+    return openAICompatProvider;
   }
   return mockProvider;
 }

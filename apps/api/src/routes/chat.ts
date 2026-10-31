@@ -18,6 +18,7 @@ const chatBodySchema = z.object({
     )
     .optional(),
   seance: z.boolean().optional(),
+  mode: z.enum(['plain', 'seance']).optional(),
 });
 
 chatRouter.post('/repos/:id/chat', async (req, res, next) => {
@@ -34,13 +35,14 @@ chatRouter.post('/repos/:id/chat', async (req, res, next) => {
       throw new AppError('invalid_request', errorMsg, 400);
     }
 
-    const { message, history, seance } = parsed.data;
+    const { message, history, seance, mode } = parsed.data;
+    const isSeance = seance ?? (mode === 'seance');
 
     const chatResponse = await answerQuestion({
       repoId,
       message,
       history,
-      seance,
+      seance: isSeance,
     });
 
     res.json(chatResponse);

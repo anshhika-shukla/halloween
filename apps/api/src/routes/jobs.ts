@@ -39,32 +39,45 @@ jobsRouter.get('/jobs/:id/events', (req, res, next) => {
     res.setHeader('Connection', 'keep-alive');
     res.flushHeaders?.();
 
-    // Replay all past events buffered for this job
     const bufferedEvents = (job as any).events as JobProgressEvent[] || [];
-    for (const event of bufferedEvents) {
-      res.write(`data: ${JSON.stringify(event)}\n\n`);
-    }
+    const snapshotLength = bufferedEvents.length;
 
-    if (job.status === 'completed' || job.status === 'failed') {
-      res.end();
-      return;
-    }
-
+    let finished = false;
     const eventName = `progress:${jobId}`;
+
+    const cleanup = () => {
+      if (!finished) {
+        finished = true;
+        jobManager.off(eventName, onProgress);
+      }
+    };
+
     const onProgress = (event: JobProgressEvent) => {
+      if (finished) return;
       res.write(`data: ${JSON.stringify(event)}\n\n`);
+      if (typeof (res as any).flush === 'function') (res as any).flush();
       if (event.status === 'completed' || event.status === 'failed') {
         cleanup();
         res.end();
       }
     };
 
-    const cleanup = () => {
-      jobManager.off(eventName, onProgress);
-    };
-
+    // Attach listener first so no future progress events can be lost
     jobManager.on(eventName, onProgress);
     req.on('close', cleanup);
+
+    // Replay earlier buffered events that occurred before attaching listener
+    for (let i = 0; i < snapshotLength; i++) {
+      const event = bufferedEvents[i];
+      res.write(`data: ${JSON.stringify(event)}\n\n`);
+    }
+    if (typeof (res as any).flush === 'function') (res as any).flush();
+
+    // If job was already finished prior to or during replay, close stream cleanly
+    if (job.status === 'completed' || job.status === 'failed') {
+      cleanup();
+      res.end();
+    }
   } catch (err) {
     next(err);
   }

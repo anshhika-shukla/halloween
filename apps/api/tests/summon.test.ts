@@ -78,35 +78,39 @@ describe('Summon API Tests (T1.3, T1.4, T1.6)', () => {
     const decoder = new TextDecoder();
     let buffer = '';
 
-    while (true) {
-      const { value, done } = await reader.read();
-      if (done) break;
+    try {
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
 
-      buffer += decoder.decode(value, { stream: true });
-      const frames = buffer.split('\n\n');
-      buffer = frames.pop() || '';
+        buffer += decoder.decode(value, { stream: true });
+        const frames = buffer.split('\n\n');
+        buffer = frames.pop() || '';
 
-      for (const frame of frames) {
-        const lines = frame.split('\n');
-        for (const line of lines) {
-          const trimmed = line.trim();
-          if (trimmed.startsWith('data:')) {
-            const jsonStr = trimmed.replace(/^data:\s*/, '');
-            try {
-              const event = JSON.parse(jsonStr);
-              if (event.stage && !stagesReceived.includes(event.stage)) {
-                stagesReceived.push(event.stage);
+        for (const frame of frames) {
+          const lines = frame.split('\n');
+          for (const line of lines) {
+            const trimmed = line.trim();
+            if (trimmed.startsWith('data:')) {
+              const jsonStr = trimmed.replace(/^data:\s*/, '');
+              try {
+                const event = JSON.parse(jsonStr);
+                if (event.stage && !stagesReceived.includes(event.stage)) {
+                  stagesReceived.push(event.stage);
+                }
+              } catch {
+                // Ignore
               }
-            } catch {
-              // Ignore
             }
           }
         }
-      }
 
-      if (stagesReceived.includes('ready')) {
-        break;
+        if (stagesReceived.includes('ready')) {
+          break;
+        }
       }
+    } finally {
+      await reader.cancel().catch(() => {});
     }
 
     // Assert stages in order (Phase 2 includes embed stage)

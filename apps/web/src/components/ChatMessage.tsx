@@ -169,7 +169,15 @@ export function ChatMessage({ message, onCitationClick }: ChatMessageProps) {
               color: 'var(--text-dim)',
             }}
           >
-            {message.model && <span>{message.model}</span>}
+            {message.model && (
+              <span
+                style={{
+                  color: message.model.toLowerCase().includes('mock') ? 'var(--accent-amber)' : 'inherit',
+                }}
+              >
+                {message.model.toLowerCase().includes('mock') ? '⚠️ MOCK (SIMULATED)' : message.model}
+              </span>
+            )}
             {typeof message.latencyMs === 'number' && (
               <span> · {message.latencyMs}ms</span>
             )}
