@@ -1,5 +1,5 @@
 // apps/api/src/resurrect/apply.ts - Approve and reject actions for proposed patches
-import { execSync } from 'node:child_process';
+import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import { AppError } from '../errors.js';
 import { getWorkspaceRoot } from '../ingest/sourceValidator.js';
@@ -32,14 +32,14 @@ export async function approvePatch(
 
   try {
     // 1. Create or switch to branch
-    execSync(`git checkout -B ${branchName}`, {
+    execFileSync('git', ['checkout', '-B', branchName], {
       cwd: repoCloneDir,
       stdio: ['pipe', 'pipe', 'pipe'],
       windowsHide: true,
     });
 
     // 2. Apply the patch
-    execSync('git apply --ignore-whitespace -', {
+    execFileSync('git', ['apply', '--ignore-whitespace', '-'], {
       cwd: repoCloneDir,
       input: patch.diff,
       stdio: ['pipe', 'pipe', 'pipe'],
@@ -47,14 +47,21 @@ export async function approvePatch(
     });
 
     // 3. Stage and commit
-    execSync('git add -A', {
+    execFileSync('git', ['add', '-A'], {
       cwd: repoCloneDir,
       stdio: ['pipe', 'pipe', 'pipe'],
       windowsHide: true,
     });
 
-    execSync(
-      `git commit -m "reporevenant: fix ${patch.findingId}" -m "Resolves finding ${patch.findingId}"`,
+    execFileSync(
+      'git',
+      [
+        'commit',
+        '-m',
+        `reporevenant: fix ${patch.findingId}`,
+        '-m',
+        `Resolves finding ${patch.findingId}`,
+      ],
       {
         cwd: repoCloneDir,
         stdio: ['pipe', 'pipe', 'pipe'],

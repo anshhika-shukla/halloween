@@ -3,6 +3,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { config } from '../config.js';
 import { AppError } from '../errors.js';
+import { jobManager } from '../ingest/jobs.js';
 import { detectFindings } from '../resurrect/detect.js';
 import { getSandboxRunner } from '../resurrect/sandbox.js';
 import { proposePatch, findPatchById } from '../resurrect/propose.js';
@@ -18,6 +19,10 @@ const ProposeBodySchema = z.object({
 resurrectionRouter.get('/repos/:id/resurrection', async (req, res, next) => {
   try {
     const { id } = req.params;
+    const repo = jobManager.getRepo(id);
+    if (!repo) {
+      throw new AppError('repo_not_found', `Repository ${id} was not found`, 404);
+    }
     const runner = getSandboxRunner();
     const { findings } = await detectFindings(id);
 
@@ -37,6 +42,11 @@ resurrectionRouter.get('/repos/:id/resurrection', async (req, res, next) => {
 resurrectionRouter.post('/repos/:id/resurrection/propose', async (req, res, next) => {
   try {
     const { id } = req.params;
+    const repo = jobManager.getRepo(id);
+    if (!repo) {
+      throw new AppError('repo_not_found', `Repository ${id} was not found`, 404);
+    }
+
     const parseResult = ProposeBodySchema.safeParse(req.body);
     if (!parseResult.success) {
       throw new AppError(
@@ -67,7 +77,11 @@ resurrectionRouter.post('/patches/:id/approve', async (req, res, next) => {
 // POST /api/repos/:repoId/patches/:id/approve
 resurrectionRouter.post('/repos/:repoId/patches/:id/approve', async (req, res, next) => {
   try {
-    const { id } = req.params;
+    const { repoId, id } = req.params;
+    const repo = jobManager.getRepo(repoId);
+    if (!repo) {
+      throw new AppError('repo_not_found', `Repository ${repoId} was not found`, 404);
+    }
     const patch = await approvePatch(id);
     res.json(patch);
   } catch (err) {
@@ -89,7 +103,11 @@ resurrectionRouter.post('/patches/:id/reject', async (req, res, next) => {
 // POST /api/repos/:repoId/patches/:id/reject
 resurrectionRouter.post('/repos/:repoId/patches/:id/reject', async (req, res, next) => {
   try {
-    const { id } = req.params;
+    const { repoId, id } = req.params;
+    const repo = jobManager.getRepo(repoId);
+    if (!repo) {
+      throw new AppError('repo_not_found', `Repository ${repoId} was not found`, 404);
+    }
     const patch = await rejectPatch(id);
     res.json(patch);
   } catch (err) {

@@ -34,6 +34,9 @@ export function findPatchById(
   patchId: string,
   workspaceRoot = getWorkspaceRoot()
 ): { patch: Patch; repoId: string; patchPath: string; diffPath: string } | null {
+  if (!patchId || !/^[a-zA-Z0-9_.-]+$/.test(patchId) || patchId.includes('..')) {
+    return null;
+  }
   const baseDataDir = path.resolve(workspaceRoot, config.DATA_DIR);
   const reposDir = path.join(baseDataDir, 'repos');
   if (!fs.existsSync(reposDir)) return null;
