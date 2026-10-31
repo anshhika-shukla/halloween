@@ -5,6 +5,7 @@ import '@testing-library/jest-dom';
 import { SummonForm, validateSource } from '../src/components/SummonForm';
 import { CitationChip } from '../src/components/CitationChip';
 import { ChatMessage } from '../src/components/ChatMessage';
+import { ScanProgress } from '../src/components/ScanProgress';
 import type { Citation, ChatMessage as ChatMessageType } from '../src/types';
 
 describe('Phase 4: UI Components (T4.1)', () => {
@@ -163,6 +164,17 @@ describe('Phase 4: UI Components (T4.1)', () => {
       expect(ungroundedSpan).toHaveTextContent('But this sentence is completely ungrounded.');
       expect(ungroundedSpan).toHaveClass('ungrounded-sentence');
       expect(ungroundedSpan).toHaveAttribute('title', expect.stringContaining('Unverified claim'));
+    });
+  });
+
+  describe('ScanProgress & Navigation Safety (Regression)', () => {
+    it('calls onComplete with resolved repoId from job state when initial prop is empty', async () => {
+      const handleComplete = vi.fn();
+      render(<ScanProgress jobId="job-test-regression" repoId="" onComplete={handleComplete} />);
+
+      // Verify it never calls onComplete with 'undefined' or empty string on mount
+      expect(handleComplete).not.toHaveBeenCalledWith('undefined');
+      expect(handleComplete).not.toHaveBeenCalledWith(undefined);
     });
   });
 });

@@ -12,8 +12,8 @@ summonRouter.post('/summon', (req, res, next) => {
       throw new AppError('invalid_source', 'Source repository is required and must be a string', 400);
     }
 
-    const { jobId } = jobManager.createJob(source);
-    res.status(202).json({ jobId });
+    const { jobId, repoId } = jobManager.createJob(source);
+    res.status(202).json({ jobId, repoId });
   } catch (err) {
     next(err);
   }

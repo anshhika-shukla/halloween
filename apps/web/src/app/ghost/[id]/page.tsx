@@ -12,7 +12,8 @@ import type { Repo, Citation } from '../../../types';
 
 export default function GhostHauntPage() {
   const params = useParams();
-  const repoId = typeof params?.id === 'string' ? decodeURIComponent(params.id) : '';
+  const rawId = typeof params?.id === 'string' ? decodeURIComponent(params.id) : '';
+  const repoId = rawId && rawId !== 'undefined' && rawId !== 'null' ? rawId : '';
 
   const [repo, setRepo] = useState<Repo | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -20,7 +21,11 @@ export default function GhostHauntPage() {
   const [selectedCitation, setSelectedCitation] = useState<Citation | null>(null);
 
   useEffect(() => {
-    if (!repoId) return;
+    if (!repoId) {
+      setError('Repository identifier is missing or invalid. Please return to the summoning chamber and select a repository.');
+      setIsLoading(false);
+      return;
+    }
 
     setIsLoading(true);
     getRepo(repoId)

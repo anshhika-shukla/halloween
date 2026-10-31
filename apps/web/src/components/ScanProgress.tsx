@@ -65,6 +65,14 @@ export function ScanProgress({
   const [isCompleted, setIsCompleted] = useState<boolean>(false);
   const terminalRef = useRef<HTMLDivElement>(null);
 
+  const currentRepoIdRef = useRef<string>(repoId || '');
+
+  useEffect(() => {
+    if (repoId) {
+      currentRepoIdRef.current = repoId;
+    }
+  }, [repoId]);
+
   // Auto-scroll terminal log
   useEffect(() => {
     if (terminalRef.current) {
@@ -78,6 +86,9 @@ export function ScanProgress({
     // First fetch initial job state
     getJob(jobId)
       .then((state: JobState) => {
+        if (state.repoId) {
+          currentRepoIdRef.current = state.repoId;
+        }
         if (state.stage) {
           setCurrentStage(state.stage);
           setProgress(Math.max(state.progress || 0, 5));
@@ -87,7 +98,8 @@ export function ScanProgress({
           completed = true;
           setIsCompleted(true);
           setProgress(100);
-          setTimeout(() => onComplete(state.repoId || repoId), 600);
+          const finalId = state.repoId || currentRepoIdRef.current || repoId;
+          setTimeout(() => onComplete(finalId), 600);
         } else if (state.status === 'failed') {
           setError(state.error || 'Ingestion failed');
         }
@@ -124,7 +136,19 @@ export function ScanProgress({
           completed = true;
           setIsCompleted(true);
           setProgress(100);
-          setTimeout(() => onComplete(repoId), 800);
+          const targetId = currentRepoIdRef.current || repoId;
+          if (targetId) {
+            setTimeout(() => onComplete(targetId), 800);
+          } else {
+            getJob(jobId)
+              .then((st) => {
+                const finalId = st.repoId || currentRepoIdRef.current || repoId;
+                setTimeout(() => onComplete(finalId), 800);
+              })
+              .catch(() => {
+                setTimeout(() => onComplete(targetId), 800);
+              });
+          }
         }
       },
       () => {
@@ -137,11 +161,15 @@ export function ScanProgress({
       if (completed) return;
       getJob(jobId)
         .then((state) => {
+          if (state.repoId) {
+            currentRepoIdRef.current = state.repoId;
+          }
           if (state.status === 'completed' || state.stage === 'ready') {
             completed = true;
             setIsCompleted(true);
             setProgress(100);
-            setTimeout(() => onComplete(state.repoId || repoId), 600);
+            const finalId = state.repoId || currentRepoIdRef.current || repoId;
+            setTimeout(() => onComplete(finalId), 600);
           } else if (state.status === 'failed') {
             setError(state.error || 'Job failed');
           }

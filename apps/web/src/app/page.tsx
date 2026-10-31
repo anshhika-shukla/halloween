@@ -39,6 +39,13 @@ export default function HomePage() {
   };
 
   const handleScanComplete = (repoId: string) => {
+    if (!repoId || repoId === 'undefined' || repoId === 'null') {
+      console.error('Cannot navigate: invalid repository ID received from scan.', repoId);
+      setSummonError('Failed to resolve repository ID after scanning. Please try again.');
+      setActiveJob(null);
+      setIsSubmitting(false);
+      return;
+    }
     router.push(`/ghost/${encodeURIComponent(repoId)}`);
   };
 

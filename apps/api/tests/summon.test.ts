@@ -59,6 +59,11 @@ describe('Summon API Tests (T1.3, T1.4, T1.6)', () => {
     expect(validRes.status).toBe(202);
     expect(validRes.body).toHaveProperty('jobId');
     expect(validRes.body.jobId).toMatch(/^job-/);
+    expect(validRes.body).toHaveProperty('repoId');
+    expect(validRes.body.repoId).toBeDefined();
+    expect(typeof validRes.body.repoId).toBe('string');
+    expect(validRes.body.repoId).not.toBe('undefined');
+    expect(validRes.body.repoId.length).toBeGreaterThan(0);
   });
 
   it('T1.4: Subscribing to SSE yields stages [clone, walk, history, issues, ready], and completes overview', async () => {
